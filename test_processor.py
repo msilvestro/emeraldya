@@ -1,4 +1,4 @@
-from processor import process, Token
+from processor import process, TokenType
 
 
 def test_should_split_line_into_tokens():
@@ -7,13 +7,13 @@ def test_should_split_line_into_tokens():
     tokens = process(input)
 
     assert tokens == [
-        (Token.writing, "貴方"),
-        (Token.reading, "あなた"),
-        (Token.writing, "は"),
-        (Token.writing, "風"),
-        (Token.reading, "かぜ"),
-        (Token.notes, "wind"),
-        (Token.writing, "のように"),
-        (Token.translation, "You're there like the wind"),
-        (Token.end_line,),
+        (TokenType.writing, "貴方"),
+        (TokenType.reading, "あなた"),
+        (TokenType.writing, "は"),
+        (TokenType.writing, "風"),
+        (TokenType.reading, "かぜ"),
+        (TokenType.notes, "wind"),
+        (TokenType.writing, "のように"),
+        (TokenType.translation, "You're there like the wind"),
+        (TokenType.end_line,),
     ]
