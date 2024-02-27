@@ -1,3 +1,4 @@
+import pytest
 from processor import process, TokenType
 
 
@@ -30,3 +31,9 @@ def test_multiple_brackets_handling():
         (TokenType.notes, "(noun) wind"),
         (TokenType.end_line,),
     ]
+
+
+@pytest.mark.parametrize("invalid_input", ["{かぜ}", "[風]((noun) wind){かぜ}"])
+def test_invalid_syntax(invalid_input):
+    with pytest.raises(Exception):
+        process(invalid_input)

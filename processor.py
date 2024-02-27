@@ -89,6 +89,11 @@ available_processors = [
     TranslationTokenProcessor,
 ]
 
+token_dependencies = {
+    TokenType.reading: [TokenType.writing],
+    TokenType.notes: [TokenType.reading, TokenType.writing],
+}
+
 
 def process(input: str):
     current_token_processor = None
@@ -103,12 +108,25 @@ def process(input: str):
                         current_token_processor.get_token(),
                     )
                 )
+                current_token_processor = None
             tokens.append((TokenType.end_line,))
             continue
 
         if current_token_processor is None:
             for token_processor in available_processors:
                 if token_processor.can_start(character):
+                    if token_processor.token_type in token_dependencies.keys():
+                        if len(tokens) == 0:
+                            raise Exception(
+                                f"Invalid syntax, {token_processor.token_type} should go after {token_dependencies[token_processor.token_type]}"
+                            )
+                        elif (
+                            tokens[-1][0]
+                            not in token_dependencies[token_processor.token_type]
+                        ):
+                            raise Exception(
+                                f"Invalid syntax, {token_processor.token_type} cannot go after {tokens[-1][0]}"
+                            )
                     current_token_processor = token_processor()
                     break
             if current_token_processor is None and character != " ":
