@@ -1,4 +1,6 @@
+from abc import abstractmethod
 from enum import Enum
+from typing import Protocol
 
 
 class TokenType(Enum):
@@ -10,35 +12,55 @@ class TokenType(Enum):
     end_line = "END_LINE"
 
 
+class TokenProcessor(Protocol):
+    token_type: TokenType
+
+    @classmethod
+    def can_start(cls, character: str) -> bool: ...
+
+    def run(self, character: str): ...
+
+    @property
+    def token(self) -> str: ...
+
+    @property
+    def has_finished(self) -> bool: ...
+
+
 class BracketTokenProcessor:
     open_bracket: str
     close_bracket: str
     token_type: TokenType
 
     def __init__(self):
-        self.token = ""
-        self.has_finished = False
-        self.depth_level = 0
+        self._token = ""
+        self._has_finished = False
+        self._depth_level = 0
 
     @classmethod
     def can_start(cls, character: str):
         return character == cls.open_bracket
 
     def run(self, character: str):
-        if self.has_finished:
+        if self._has_finished:
             raise Exception("Token processor has already finished")
-        if character == self.close_bracket and self.depth_level == 0:
-            self.has_finished = True
+        if character == self.close_bracket and self._depth_level == 0:
+            self._has_finished = True
             return
 
-        self.token += character
+        self._token += character
         if character == self.open_bracket:
-            self.depth_level += 1
+            self._depth_level += 1
         elif character == self.close_bracket:
-            self.depth_level -= 1
+            self._depth_level -= 1
 
-    def get_token(self):
-        return self.token.strip()
+    @property
+    def token(self):
+        return self._token.strip()
+
+    @property
+    def has_finished(self):
+        return self._has_finished
 
 
 class WritingTokenProcessor(BracketTokenProcessor):
@@ -63,26 +85,31 @@ class TranslationTokenProcessor:
     token_type = TokenType.translation
 
     def __init__(self):
-        self.token = ""
-        self.has_finished = False
+        self._token = ""
+        self._has_finished = False
 
     @classmethod
     def can_start(cls, character: str):
         return character == "~"
 
     def run(self, character: str):
-        if self.has_finished:
+        if self._has_finished:
             raise Exception("Token processor has already finished")
         if character == "\n":
-            self.has_finished = True
+            self._has_finished = True
         else:
-            self.token += character
+            self._token += character
 
-    def get_token(self):
-        return self.token.strip()
+    @property
+    def token(self):
+        return self._token.strip()
+
+    @property
+    def has_finished(self):
+        return self._has_finished
 
 
-available_processors = [
+available_processors: list[type[TokenProcessor]] = [
     WritingTokenProcessor,
     ReadingTokenProcessor,
     NotesTokenProcessor,
@@ -105,7 +132,7 @@ def process(input: str):
                 tokens.append(
                     (
                         current_token_processor.token_type,
-                        current_token_processor.get_token(),
+                        current_token_processor.token,
                     )
                 )
                 current_token_processor = None
@@ -137,14 +164,14 @@ def process(input: str):
                 tokens.append(
                     (
                         current_token_processor.token_type,
-                        current_token_processor.get_token(),
+                        current_token_processor.token,
                     )
                 )
                 current_token_processor = None
 
     if current_token_processor is not None:
         tokens.append(
-            (current_token_processor.token_type, current_token_processor.get_token())
+            (current_token_processor.token_type, current_token_processor.token)
         )
     tokens.append((TokenType.end_line,))
 
