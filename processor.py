@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from enum import Enum
 from typing import Protocol
 
@@ -16,15 +15,19 @@ class TokenProcessor(Protocol):
     token_type: TokenType
 
     @classmethod
-    def can_start(cls, character: str) -> bool: ...
+    def can_start(cls, character: str) -> bool:
+        ...
 
-    def run(self, character: str): ...
+    def run(self, character: str):
+        ...
 
     @property
-    def token(self) -> str: ...
+    def token(self) -> str:
+        ...
 
     @property
-    def has_finished(self) -> bool: ...
+    def has_finished(self) -> bool:
+        ...
 
 
 class BracketTokenProcessor:
