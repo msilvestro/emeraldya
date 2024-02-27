@@ -18,6 +18,7 @@ class BracketTokenProcessor:
     def __init__(self):
         self.token = ""
         self.has_finished = False
+        self.depth_level = 0
 
     @classmethod
     def can_start(cls, character: str):
@@ -26,10 +27,15 @@ class BracketTokenProcessor:
     def run(self, character: str):
         if self.has_finished:
             raise Exception("Token processor has already finished")
-        if character == self.close_bracket:
+        if character == self.close_bracket and self.depth_level == 0:
             self.has_finished = True
-        else:
-            self.token += character
+            return
+
+        self.token += character
+        if character == self.open_bracket:
+            self.depth_level += 1
+        elif character == self.close_bracket:
+            self.depth_level -= 1
 
     def get_token(self):
         return self.token.strip()
@@ -94,7 +100,7 @@ def process(input: str):
                 tokens.append(
                     (
                         current_token_processor.token_type,
-                        current_token_processor.get_token()
+                        current_token_processor.get_token(),
                     )
                 )
             tokens.append((TokenType.end_line,))

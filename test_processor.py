@@ -17,3 +17,16 @@ def test_should_split_line_into_tokens():
         (TokenType.translation, "You're there like the wind"),
         (TokenType.end_line,),
     ]
+
+
+def test_multiple_brackets_handling():
+    input = "[風]{かぜ}((noun) wind)"
+
+    tokens = process(input)
+
+    assert tokens == [
+        (TokenType.writing, "風"),
+        (TokenType.reading, "かぜ"),
+        (TokenType.notes, "(noun) wind"),
+        (TokenType.end_line,),
+    ]
