@@ -3,6 +3,12 @@ from builder import Sentence
 
 def convert(sentences: list[Sentence]):
     html_output = """<style>
+#sentences {
+    margin: 0 auto;
+    width: 60%;
+    font-size: 1.5em;
+}
+
 .word {
     display: inline-block;
 }
@@ -33,8 +39,12 @@ def convert(sentences: list[Sentence]):
 .tooltip:hover .tooltiptext {
   visibility: visible;
 }
-</style>"""
+</style>
+<div id="sentences">"""
     for sentence in sentences:
+        if sentence is None:
+            html_output += "<br />"
+            continue
         for word in sentence.words:
             classes = ["word"]
             if word.notes:
@@ -49,4 +59,5 @@ def convert(sentences: list[Sentence]):
                 html_output += f'<span class="tooltiptext">{word.notes}</span>'
             html_output += "</div>"
         html_output += "<br />"
+    html_output += "</div>"
     return html_output
