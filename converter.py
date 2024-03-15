@@ -88,4 +88,4 @@ def process_tooltips(tooltips):
             f"<span>{write_ruby(tooltip.writing, tooltip.reading)}</span><br />"
         )
         output_html += f"<span>{tooltip.content}</span><br />"
-    return output_html
+    return output_html.replace("'", "\\'")
