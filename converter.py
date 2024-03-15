@@ -67,6 +67,7 @@ def convert(header: dict, body: list[Sentence]):
             html_output += write_ruby(word.writing, word.reading)
             html_output += "</ruby>"
             html_output += "</div>"
+        html_output += f' <div class="word tooltip" onclick="showTooltip(this, \'{process_translation(sentence.translation)}\')">🔄</div>'
         html_output += "<br />"
     html_output += "</div>"
     return html_output
@@ -88,4 +89,11 @@ def process_tooltips(tooltips):
             f"<span>{write_ruby(tooltip.writing, tooltip.reading)}</span><br />"
         )
         output_html += f"<span>{tooltip.content}</span><br />"
+    return output_html.replace("'", "\\'")
+
+
+def process_translation(translation):
+    output_html = ""
+    output_html += "<b>Translation</b><br />"
+    output_html += f"<span>{translation}</span>"
     return output_html.replace("'", "\\'")
