@@ -1,4 +1,4 @@
-from builder import Sentence
+from processor import Sentence
 
 
 def convert(sentences: list[Sentence]):
@@ -42,7 +42,7 @@ def convert(sentences: list[Sentence]):
 <script>
     function showTooltip(element, content) {
         const tooltipContainer = document.getElementById("tooltip-container");
-        tooltipContainer.getElementsByClassName("tooltip-content")[0].innerText = content;
+        tooltipContainer.getElementsByClassName("tooltip-content")[0].innerHTML = content;
         tooltipContainer.style.visibility = 'visible';
         tooltipContainer.style.top = (window.scrollY + element.getBoundingClientRect().bottom - 8) + "px";
     }
@@ -62,16 +62,29 @@ def convert(sentences: list[Sentence]):
             html_output += "<br />"
             continue
         for word in sentence.words:
-            if word.notes:
-                div_configuration = f' class="word tooltip" onclick="showTooltip(this, \'{word.notes}\')"'
-            else:
-                div_configuration = ' class="word"'
-            html_output += f"<div{div_configuration}>"
-            html_output += f"<ruby>{word.writing}"
-            if word.reading:
-                html_output += f"<rt>{word.reading}</rt>"
+            html_output += f'<div class="word tooltip" onclick="showTooltip(this, \'{process_tooltips(word.tooltips)}\')">'
+            html_output += write_ruby(word.writing, word.reading)
             html_output += "</ruby>"
             html_output += "</div>"
         html_output += "<br />"
     html_output += "</div>"
     return html_output
+
+
+def write_ruby(writing, reading=None):
+    html_output = f"<ruby>{writing}"
+    if reading:
+        html_output += f"<rt>{reading}</rt>"
+    html_output += "</ruby>"
+    return html_output
+
+
+def process_tooltips(tooltips):
+    output_html = ""
+    for tooltip in tooltips:
+        output_html += f"<b>{tooltip.title}</b><br />"
+        output_html += (
+            f"<span>{write_ruby(tooltip.writing, tooltip.reading)}</span><br />"
+        )
+        output_html += f"<span>{tooltip.content}</span><br />"
+    return output_html

@@ -1,181 +1,162 @@
-from enum import Enum
-from typing import Protocol
+from dataclasses import dataclass
+from enum import StrEnum
 
 
-class TokenType(Enum):
-    none = "NONE"
-    writing = "WRITING"
-    reading = "READING"
-    notes = "NOTES"
-    translation = "TRANSLATION"
-    end_line = "END_LINE"
+class Sections(StrEnum):
+    header = "HEADER"
+    body = "BODY"
+    dictionary = "DICTIONARY"
 
 
-class TokenProcessor(Protocol):
-    token_type: TokenType
+@dataclass
+class WordTooltip:
+    title: str
+    writing: str
+    reading: str
+    content: str
 
     @classmethod
-    def can_start(cls, character: str) -> bool:
-        ...
-
-    def run(self, character: str):
-        ...
-
-    @property
-    def token(self) -> str:
-        ...
-
-    @property
-    def has_finished(self) -> bool:
-        ...
+    def from_dictionary_entry(cls, dictionary_entry: "DictionaryEntry"):
+        return cls(
+            title="Dictionary entry",
+            writing=dictionary_entry.writing,
+            reading=dictionary_entry.reading,
+            content=dictionary_entry.translation,
+        )
 
 
-class BracketTokenProcessor:
-    open_bracket: str
-    close_bracket: str
-    token_type: TokenType
+class Word:
+    def __init__(self, writing: str):
+        self.writing = writing
+        self.reading = None
+        self.tooltips = []
 
+    def add_reading(self, reading: str):
+        self.reading = reading
+
+    def add_tooltip(self, tooltip: WordTooltip):
+        self.tooltips.append(tooltip)
+
+    def __repr__(self):
+        repr_str = f"<Word writing={self.writing}"
+        if self.reading:
+            repr_str += f", reading={self.reading}"
+        if self.tooltips:
+            repr_str += f", tooltips={self.tooltips}"
+        repr_str += ">"
+        return repr_str
+
+    def __eq__(self, other: "Word"):
+        return (
+            self.reading == other.reading
+            and self.writing == other.writing
+            and self.tooltips == other.tooltips
+        )
+
+
+class Sentence:
     def __init__(self):
-        self._token = ""
-        self._has_finished = False
-        self._depth_level = 0
+        self.words: list[Word] = []
+        self.translation: str | None = None
 
-    @classmethod
-    def can_start(cls, character: str):
-        return character == cls.open_bracket
+    def add_word(self, word: Word):
+        self.words.append(word)
 
-    def run(self, character: str):
-        if self._has_finished:
-            raise Exception("Token processor has already finished")
-        if character == self.close_bracket and self._depth_level == 0:
-            self._has_finished = True
-            return
-
-        self._token += character
-        if character == self.open_bracket:
-            self._depth_level += 1
-        elif character == self.close_bracket:
-            self._depth_level -= 1
+    def add_translation(self, translation: str):
+        self.translation = translation
 
     @property
-    def token(self):
-        return self._token.strip()
+    def last_word(self):
+        return self.words[-1]
 
-    @property
-    def has_finished(self):
-        return self._has_finished
+    def __repr__(self):
+        repr_str = "<Words: "
+        repr_str += " ".join(repr(word) for word in self.words)
+        if self.translation:
+            repr_str += f"; Translation: {self.translation}"
+        repr_str += ">"
+        return repr_str
 
-
-class WritingTokenProcessor(BracketTokenProcessor):
-    open_bracket = "["
-    close_bracket = "]"
-    token_type = TokenType.writing
-
-
-class ReadingTokenProcessor(BracketTokenProcessor):
-    open_bracket = "{"
-    close_bracket = "}"
-    token_type = TokenType.reading
+    def __eq__(self, other: "Sentence"):
+        for word_a, word_b in zip(self.words, other.words):
+            if word_a != word_b:
+                return False
+        return self.translation == other.translation
 
 
-class NotesTokenProcessor(BracketTokenProcessor):
-    open_bracket = "("
-    close_bracket = ")"
-    token_type = TokenType.notes
+@dataclass
+class DictionaryEntry:
+    writing: str
+    reading: str | None
+    translation: str
 
 
-class TranslationTokenProcessor:
-    token_type = TokenType.translation
-
-    def __init__(self):
-        self._token = ""
-        self._has_finished = False
-
-    @classmethod
-    def can_start(cls, character: str):
-        return character == "~"
-
-    def run(self, character: str):
-        if self._has_finished:
-            raise Exception("Token processor has already finished")
-        if character == "\n":
-            self._has_finished = True
-        else:
-            self._token += character
-
-    @property
-    def token(self):
-        return self._token.strip()
-
-    @property
-    def has_finished(self):
-        return self._has_finished
-
-
-available_processors: list[type[TokenProcessor]] = [
-    WritingTokenProcessor,
-    ReadingTokenProcessor,
-    NotesTokenProcessor,
-    TranslationTokenProcessor,
-]
-
-token_dependencies = {
-    TokenType.reading: [TokenType.writing],
-    TokenType.notes: [TokenType.reading, TokenType.writing],
-}
+@dataclass
+class LinkedDictionaryEntry:
+    writing: str
+    reading: str | None
+    linked_entry: DictionaryEntry
+    explanation: str
 
 
 def process(input: str):
-    current_token_processor = None
-    tokens = []
+    header = {}
+    body = []
+    dictionary = {}
 
-    for character in input:
-        if character == "\n":
-            if current_token_processor is not None:
-                tokens.append(
-                    (
-                        current_token_processor.token_type,
-                        current_token_processor.token,
-                    )
-                )
-                current_token_processor = None
-            tokens.append((TokenType.end_line,))
+    current_section = None
+
+    for line in input.split("\n"):
+        if line == "":
             continue
+        if line.startswith("---"):
+            if line == "--- header":
+                current_section = Sections.header
+            elif line == "--- body":
+                current_section = Sections.body
+            elif line == "--- dictionary":
+                current_section = Sections.dictionary
+        elif current_section == Sections.header:
+            key, value = line.split(":", 1)
+            header[key.strip()] = value.strip()
+        elif current_section == Sections.body:
+            sentence_text, translation = line.split(" -> ", 1)
+            words_text = sentence_text.split(" ")
+            sentence = Sentence()
+            for word_text in words_text:
+                sentence.add_word(Word(writing=word_text))
+            sentence.add_translation(translation)
+            body.append(sentence)
+        elif current_section == Sections.dictionary:
+            writing, reading, description = line.split(" ", 2)
+            if reading == "_":
+                reading = None
+            if description.startswith("==>"):
+                description = description[3:].strip()
+                linked_entry_writing, explanation = description.split(" ", 1)
+                dictionary[writing] = LinkedDictionaryEntry(
+                    writing, reading, dictionary[linked_entry_writing], explanation
+                )
+            else:
+                dictionary[writing] = DictionaryEntry(writing, reading, description)
 
-        if current_token_processor is None:
-            for token_processor in available_processors:
-                if token_processor.can_start(character):
-                    if token_processor.token_type in token_dependencies.keys():
-                        if len(tokens) == 0:
-                            raise Exception(
-                                f"Invalid syntax, {token_processor.token_type} should go after {token_dependencies[token_processor.token_type]}"
-                            )
-                        elif (
-                            tokens[-1][0]
-                            not in token_dependencies[token_processor.token_type]
-                        ):
-                            raise Exception(
-                                f"Invalid syntax, {token_processor.token_type} cannot go after {tokens[-1][0]}"
-                            )
-                    current_token_processor = token_processor()
-                    break
-            if current_token_processor is None and character != " ":
-                tokens.append((TokenType.writing, character))
-        else:
-            current_token_processor.run(character)
-            if current_token_processor.has_finished:
-                tokens.append(
-                    (
-                        current_token_processor.token_type,
-                        current_token_processor.token,
+    for sentence in body:
+        for word in sentence.words:
+            dictionary_entry = dictionary[word.writing]
+            word.reading = dictionary_entry.reading
+            if isinstance(dictionary_entry, DictionaryEntry):
+                word.add_tooltip(WordTooltip.from_dictionary_entry(dictionary_entry))
+            elif isinstance(dictionary_entry, LinkedDictionaryEntry):
+                word.add_tooltip(
+                    WordTooltip.from_dictionary_entry(dictionary_entry.linked_entry)
+                )
+                word.add_tooltip(
+                    WordTooltip(
+                        title="Sentence form",
+                        writing=dictionary_entry.writing,
+                        reading=dictionary_entry.reading,
+                        content=dictionary_entry.explanation,
                     )
                 )
-                current_token_processor = None
 
-    if current_token_processor is not None:
-        tokens.append(
-            (current_token_processor.token_type, current_token_processor.token)
-        )
-    tokens.append((TokenType.end_line,))
-
-    return tokens
+    return header, body
