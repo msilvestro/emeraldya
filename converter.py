@@ -1,7 +1,7 @@
 from processor import Sentence
 
 
-def convert(sentences: list[Sentence]):
+def convert(header: dict, body: list[Sentence]):
     html_output = """<style>
     #sentences {
         margin: 0 auto;
@@ -51,13 +51,14 @@ def convert(sentences: list[Sentence]):
         const tooltipContainer = document.getElementById("tooltip-container");
         tooltipContainer.style.visibility = 'hidden';
     }
-</script>
-<div id="sentences">
+</script><div id="sentences">"""
+    html_output += "<h1>" + header["title"] + " - " + header["author"] + "</h1>"
+    html_output += """
     <div id="tooltip-container" style="visibility: hidden">
         <span class="tooltip-close" onclick="hideTooltip()">[x]</span><br />
         <span class="tooltip-content">This is the content of the tooltip</span>
     </div>"""
-    for sentence in sentences:
+    for sentence in body:
         if sentence is None:
             html_output += "<br />"
             continue
