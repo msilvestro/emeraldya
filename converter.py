@@ -4,7 +4,7 @@ from processor import Sentence
 
 def convert(header: dict, body: list[Sentence]):
     html_output = """<style>
-    #sentences {
+        #sentences {
         margin: 0 auto;
         max-width: 800px;
         font-size: 1.5em;
@@ -13,18 +13,31 @@ def convert(header: dict, body: list[Sentence]):
 
     .word {
         display: inline-block;
+        border-bottom: 5px solid white;
+        height: 1.5em;  /* otherwise kanjis might have different heights */
+        margin-bottom: 20px;
+    }
+    
+    .word:hover {
+        border-bottom: 5px solid black;
     }
 
-    .tooltip {
+    /* Customize ruby appearance to avoid spacing issues */
+    ruby {
+        display: inline-block;
         position: relative;
-        border-bottom: 1px dotted black;
     }
 
-    .tooltip:hover {
-        border-bottom: 1px solid black;
+    ruby rt {
+        display: inline-block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -1em;
+        text-align: center;
     }
 
-    #tooltip-container {
+    #tooltip {
         box-sizing: border-box;
         position: absolute;
         z-index: 1;
@@ -34,7 +47,7 @@ def convert(header: dict, body: list[Sentence]):
         background-color: white;
     }
 
-    #tooltip-container .tooltip-close {
+    #tooltip .tooltip-close {
         cursor: pointer;
         background-color: black;
         color: white;
@@ -42,20 +55,20 @@ def convert(header: dict, body: list[Sentence]):
 </style>
 <script>
     function showTooltip(element, content) {
-        const tooltipContainer = document.getElementById("tooltip-container");
-        tooltipContainer.getElementsByClassName("tooltip-content")[0].innerHTML = content;
-        tooltipContainer.style.visibility = 'visible';
-        tooltipContainer.style.top = (window.scrollY + element.getBoundingClientRect().bottom - 8) + "px";
+        const tooltip = document.getElementById("tooltip");
+        tooltip.getElementsByClassName("tooltip-content")[0].innerHTML = content;
+        tooltip.style.visibility = 'visible';
+        tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom - 8) + "px";
     }
 
     function hideTooltip() {
-        const tooltipContainer = document.getElementById("tooltip-container");
+        const tooltipContainer = document.getElementById("tooltip");
         tooltipContainer.style.visibility = 'hidden';
     }
 </script><div id="sentences">"""
     html_output += "<h1>" + header["title"] + " - " + header["author"] + "</h1>"
     html_output += """
-    <div id="tooltip-container" style="visibility: hidden">
+    <div id="tooltip" style="visibility: hidden">
         <span class="tooltip-close" onclick="hideTooltip()">[x]</span><br />
         <span class="tooltip-content">This is the content of the tooltip</span>
     </div>"""
