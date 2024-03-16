@@ -1,3 +1,4 @@
+from furigana import split_characters
 from processor import Sentence
 
 
@@ -74,10 +75,17 @@ def convert(header: dict, body: list[Sentence]):
 
 
 def write_ruby(writing, reading=None):
-    html_output = f"<ruby>{writing}"
-    if reading:
-        html_output += f"<rt>{reading}</rt>"
-    html_output += "</ruby>"
+    if not reading:
+        return writing
+
+    html_output = ""
+    characters = split_characters(writing, reading)
+    for character in characters:
+        if not character.furigana:
+            html_output += character.main
+        else:
+            html_output += f"<ruby>{character.main}<rt>{character.furigana}</rt></ruby>"
+
     return html_output
 
 
