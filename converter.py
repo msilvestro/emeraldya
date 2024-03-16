@@ -12,13 +12,16 @@ def convert(header: dict, body: list[Sentence]):
         font-size: 1.5em;
         position: relative;
     }
+    
+    .sentence {
+        padding-top: 0.5em;
+        margin-bottom: 20px;
+    }
 
     .word, .translation {
         display: inline-block;
         border-bottom: 5px solid white;
         height: 1.5em;  /* otherwise kanjis might have different heights */
-        margin-top: 0.5em;
-        margin-bottom: 10px;
     }
     
     .word:hover, .word.active {
@@ -167,7 +170,7 @@ def convert(header: dict, body: list[Sentence]):
             f' <div class="translation" title="translation"'
             f" onclick=\"showTooltip(this, '{process_translation(sentence.translation)}');activateSentence(this)\">🔄</div>"
         )
-        html_output += "<div/>"
+        html_output += "</div>"
     html_output += "</div>"
     return html_output
 
