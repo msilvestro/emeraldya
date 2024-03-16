@@ -13,7 +13,7 @@ def convert(header: dict, body: list[Sentence]):
         position: relative;
     }
 
-    .word {
+    .word, .translation {
         display: inline-block;
         border-bottom: 5px solid white;
         height: 1.5em;  /* otherwise kanjis might have different heights */
@@ -21,12 +21,11 @@ def convert(header: dict, body: list[Sentence]):
         margin-bottom: 10px;
     }
     
-    .word:hover {
+    .word:hover, .word.active {
         border-bottom: 5px solid cornflowerblue;
     }
     
-    .translation {
-        display: inline-block;
+    .translation:hover {
         cursor: pointer;
     }
 
@@ -89,8 +88,17 @@ def convert(header: dict, body: list[Sentence]):
 </style>
 <script>
     let justClicked = false;
+    let activeElements = [];
+
+    function cleanActiveElements() {
+        for (let child of activeElements) {
+            child.classList.remove("active");
+        }
+        activeElements = [];
+    }
 
     function showTooltip(element, content) {
+        cleanActiveElements();
         const tooltip = document.getElementById("tooltip");
         tooltip.innerHTML = content;
         tooltip.style.visibility = 'visible';
@@ -99,8 +107,25 @@ def convert(header: dict, body: list[Sentence]):
     }
 
     function hideTooltip() {
+        cleanActiveElements();
         const tooltip = document.getElementById("tooltip");
         tooltip.style.visibility = 'hidden';
+    }
+    
+    function activateWord(element) {
+        element.classList.add("active");
+        activeElements = [element];
+    }
+    
+    function activateSentence(element) {
+        activeElements = [];
+        const sentence = element.parentNode;
+        for (let child of sentence.children) {
+            if (child.classList.contains("word")) {
+                child.classList.add("active");
+                activeElements.push(child);
+            }
+        }
     }
 
     window.onload = function() {
@@ -132,16 +157,17 @@ def convert(header: dict, body: list[Sentence]):
         if sentence is None:
             html_output += "<br />"
             continue
+        html_output += '<div class="sentence">'
         for word in sentence.words:
-            html_output += f'<div class="word" onclick="showTooltip(this, \'{process_tooltips(word.tooltips)}\')">'
+            html_output += f'<div class="word" onclick="showTooltip(this, \'{process_tooltips(word.tooltips)}\');activateWord(this)">'
             html_output += write_ruby(word.writing, word.reading)
             html_output += "</ruby>"
             html_output += "</div>"
         html_output += (
             f' <div class="translation" title="translation"'
-            f" onclick=\"showTooltip(this, '{process_translation(sentence.translation)}')\">🔄</div>"
+            f" onclick=\"showTooltip(this, '{process_translation(sentence.translation)}');activateSentence(this)\">🔄</div>"
         )
-        html_output += "<br />"
+        html_output += "<div/>"
     html_output += "</div>"
     return html_output
 
