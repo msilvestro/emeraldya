@@ -88,16 +88,40 @@ def convert(header: dict, body: list[Sentence]):
     }
 </style>
 <script>
+    let justClicked = false;
+
     function showTooltip(element, content) {
         const tooltip = document.getElementById("tooltip");
         tooltip.innerHTML = content;
         tooltip.style.visibility = 'visible';
         tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom - 8) + "px";
+        justClicked = true;
     }
 
     function hideTooltip() {
-        const tooltipContainer = document.getElementById("tooltip");
-        tooltipContainer.style.visibility = 'hidden';
+        const tooltip = document.getElementById("tooltip");
+        tooltip.style.visibility = 'hidden';
+    }
+
+    window.onload = function() {
+        const tooltip = document.getElementById("tooltip");
+
+        document.onclick =function(event) {
+            if (justClicked) {
+                justClicked = false;
+                return;
+            }
+
+            if (tooltip.style.visibility === 'visible' && !tooltip.contains(event.target)) {
+                hideTooltip();
+            }
+        }
+
+        document.onkeydown = function (event) {
+            if(event.key === 'Escape' && tooltip.style.visibility === 'visible') {
+                hideTooltip();
+            }
+        }
     }
 </script><div id="wrapper">"""
     html_output += "<h1>" + header["title"] + " - " + header["author"] + "</h1>"
