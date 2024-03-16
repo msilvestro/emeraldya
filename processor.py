@@ -107,8 +107,6 @@ def process(input: str):
     current_section = None
 
     for line in input.split("\n"):
-        if line == "":
-            continue
         if line.startswith("---"):
             if line == "--- header":
                 current_section = Sections.header
@@ -117,9 +115,15 @@ def process(input: str):
             elif line == "--- dictionary":
                 current_section = Sections.dictionary
         elif current_section == Sections.header:
+            if line == "":
+                continue
             key, value = line.split(":", 1)
             header[key.strip()] = value.strip()
         elif current_section == Sections.body:
+            if line == "":
+                body.append(None)
+                continue
+
             sentence_text, translation = line.split(" -> ", 1)
             words_text = sentence_text.split(" ")
             sentence = Sentence()
@@ -128,6 +132,8 @@ def process(input: str):
             sentence.add_translation(translation)
             body.append(sentence)
         elif current_section == Sections.dictionary:
+            if line == "":
+                continue
             writing, reading, description = line.split(" ", 2)
             if reading == "_":
                 reading = None
@@ -141,6 +147,8 @@ def process(input: str):
                 dictionary[writing] = DictionaryEntry(writing, reading, description)
 
     for sentence in body:
+        if not sentence:
+            continue
         for word in sentence.words:
             dictionary_entry = dictionary[word.writing]
             word.reading = dictionary_entry.reading
