@@ -1,0 +1,201 @@
+{%- macro write_ruby(word) -%}
+    {%- for character in word.split_characters() -%}
+        {%- if not character.furigana -%}
+            {{ character.main }}
+        {%- else -%}
+            <ruby>{{ character.main }}<rt>{{ character.furigana }}</rt></ruby>
+        {%- endif -%}
+    {%- endfor -%}
+{%- endmacro -%}
+{% macro create_tooltip_section(title, content, word=None, is_header=False) %}
+    <div class="section">
+        <div class="section-header"><span>{{ title }}</span>{% if is_header %}
+            <span class="tooltip-close" onclick="hideTooltip()">x</span>{% endif %}</div>
+        <div class="section-content">{% if not word %}{{ content }}{% else %}<p>{{ write_ruby(word) }}</p><p>{{ content }}</p>{% endif %}</div>
+    </div>
+{% endmacro %}
+
+<style>
+    #wrapper {
+        margin: 0 auto;
+        max-width: 768px;
+        font-size: 1.2em;
+        position: relative;
+    }
+
+    .sentence {
+        padding-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+
+    .word, .translation {
+        display: inline-block;
+        border-bottom: 5px solid white;
+        height: 1.5em; /* otherwise kanjis might have different heights */
+    }
+
+    .word:hover, .word.active {
+        border-bottom: 5px solid cornflowerblue;
+    }
+
+    .translation:hover {
+        cursor: pointer;
+    }
+
+    .tooltip-content {
+        display: none;
+    }
+
+    /* Customize ruby appearance to avoid spacing issues */
+    ruby {
+        display: inline-block;
+        position: relative;
+    }
+
+    ruby rt {
+        display: inline-block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -1em;
+        text-align: center;
+    }
+
+    #tooltip {
+        box-sizing: border-box;
+        position: absolute;
+        z-index: 1;
+        min-width: 100%;
+        border: 1px solid black;
+        background-color: white;
+    }
+
+    #tooltip .section {
+        margin-bottom: 10px;
+    }
+
+    #tooltip .section:last-child {
+        margin-bottom: 0;
+    }
+
+    #tooltip .section-header {
+        background-color: cornflowerblue;
+        padding: 10px;
+        color: white;
+    }
+
+    #tooltip .section-content {
+        padding: 10px;
+    }
+
+    #tooltip .section-content p {
+        margin: 0;
+        padding: 0;
+    }
+
+    #tooltip .tooltip-close {
+        cursor: pointer;
+        float: right;
+        line-height: 100%;
+    }
+
+    #tooltip ruby {
+        margin-top: 0.5em;
+    }
+</style>
+<script>
+    let justClicked = false;
+    let activeElements = [];
+
+    function cleanActiveElements() {
+        for (let child of activeElements) {
+            child.classList.remove("active");
+        }
+        activeElements = [];
+    }
+
+    function showTooltip(element) {
+        cleanActiveElements();
+        const tooltip = document.getElementById("tooltip");
+        tooltip.innerHTML = element.getElementsByClassName("tooltip-content")[0].innerHTML;
+        tooltip.style.visibility = 'visible';
+        tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom - 8) + "px";
+        justClicked = true;
+    }
+
+    function hideTooltip() {
+        cleanActiveElements();
+        const tooltip = document.getElementById("tooltip");
+        tooltip.style.visibility = 'hidden';
+    }
+
+    function activateWord(element) {
+        element.classList.add("active");
+        activeElements = [element];
+    }
+
+    function activateSentence(element) {
+        activeElements = [];
+        const sentence = element.parentNode;
+        for (let child of sentence.children) {
+            if (child.classList.contains("word")) {
+                child.classList.add("active");
+                activeElements.push(child);
+            }
+        }
+    }
+
+    window.onload = function () {
+        const tooltip = document.getElementById("tooltip");
+
+        document.onclick = function (event) {
+            if (justClicked) {
+                justClicked = false;
+                return;
+            }
+
+            if (tooltip.style.visibility === 'visible' && !tooltip.contains(event.target)) {
+                hideTooltip();
+            }
+        }
+
+        document.onkeydown = function (event) {
+            if (event.key === 'Escape' && tooltip.style.visibility === 'visible') {
+                hideTooltip();
+            }
+        }
+    }
+</script>
+<div id="wrapper">
+    <h1>{{ header["title"] }} - {{ header["author"] }}</h1>
+    <div id="tooltip" style="visibility: hidden"></div>
+    {% for sentence in body %}
+        {% if not sentence %}
+            <br/>
+        {% else %}
+            <div class="sentence">
+                {%- for word in sentence.words -%}
+                    <div class="word" onclick="showTooltip(this);activateWord(this)">
+                        {{- write_ruby(word) -}}
+                        <div class="tooltip-content">
+                            {% for tooltip in word.tooltips %}
+                                {% if loop.first %}
+                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content, is_header=True) }}
+                                {% else %}
+                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content, is_header=False) }}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {%- endfor -%}
+                <div class="translation" title="translation"
+                     onclick="showTooltip(this);activateSentence(this)">
+                    🔄
+                    <div class="tooltip-content">
+                        {{- create_tooltip_section(title="Translation", content=sentence.translation, is_header=True) -}}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>

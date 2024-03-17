@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
+from emeraldya.furigana import split_characters
+
 
 class Sections(StrEnum):
     header = "HEADER"
@@ -8,34 +10,20 @@ class Sections(StrEnum):
     dictionary = "DICTIONARY"
 
 
-@dataclass
-class WordTooltip:
-    title: str
-    writing: str
-    reading: str
-    content: str
-
-    @classmethod
-    def from_dictionary_entry(cls, dictionary_entry: "DictionaryEntry"):
-        return cls(
-            title="Dictionary entry",
-            writing=dictionary_entry.writing,
-            reading=dictionary_entry.reading,
-            content=dictionary_entry.translation,
-        )
-
-
 class Word:
-    def __init__(self, writing: str):
+    def __init__(self, writing: str, reading: str | None = None):
         self.writing = writing
-        self.reading = None
+        self.reading = reading
         self.tooltips = []
 
     def add_reading(self, reading: str):
         self.reading = reading
 
-    def add_tooltip(self, tooltip: WordTooltip):
+    def add_tooltip(self, tooltip: "WordTooltip"):
         self.tooltips.append(tooltip)
+
+    def split_characters(self):
+        return split_characters(self.writing, self.reading)
 
     def __repr__(self):
         repr_str = f"<Word writing={self.writing}"
@@ -51,6 +39,23 @@ class Word:
             self.reading == other.reading
             and self.writing == other.writing
             and self.tooltips == other.tooltips
+        )
+
+
+@dataclass
+class WordTooltip:
+    title: str
+    word: "Word"
+    content: str
+
+    @classmethod
+    def from_dictionary_entry(cls, dictionary_entry: "DictionaryEntry"):
+        return cls(
+            title="Dictionary entry",
+            word=Word(
+                writing=dictionary_entry.writing, reading=dictionary_entry.reading
+            ),
+            content=dictionary_entry.translation,
         )
 
 
@@ -161,8 +166,10 @@ def process(input: str):
                 word.add_tooltip(
                     WordTooltip(
                         title="Sentence form",
-                        writing=dictionary_entry.writing,
-                        reading=dictionary_entry.reading,
+                        word=Word(
+                            writing=dictionary_entry.writing,
+                            reading=dictionary_entry.reading,
+                        ),
                         content=dictionary_entry.explanation,
                     )
                 )

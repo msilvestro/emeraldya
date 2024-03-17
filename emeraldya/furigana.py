@@ -19,6 +19,9 @@ def match_kanjis(writing, reading):
 
 
 def split_characters(writing, reading):
+    if not reading:
+        return [Character(writing, None)]
+
     if len(writing) == 1:
         return [Character(writing, reading)]
 
