@@ -38,6 +38,14 @@
         border-bottom: 5px solid cornflowerblue;
     }
 
+    .punctuation:hover {
+        border-bottom: 5px solid white;
+    }
+
+    .punctuation.active:hover {
+        border-bottom: 5px solid cornflowerblue;
+    }
+
     .translation:hover {
         cursor: pointer;
     }
@@ -175,6 +183,7 @@
         {% else %}
             <div class="sentence">
                 {%- for word in sentence.words -%}
+                    {%- if not word.is_punctuation -%}
                     <div class="word" onclick="showTooltip(this);activateWord(this)">
                         {{- write_ruby(word) -}}
                         <div class="tooltip-content">
@@ -187,6 +196,9 @@
                             {% endfor %}
                         </div>
                     </div>
+                    {%- else -%}
+                        <div class="word punctuation">{{ word.writing }}</div>
+                    {%- endif -%}
                 {%- endfor -%}
                 <div class="translation" title="translation"
                      onclick="showTooltip(this);activateSentence(this)">

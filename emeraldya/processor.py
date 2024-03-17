@@ -11,10 +11,13 @@ class Sections(StrEnum):
 
 
 class Word:
-    def __init__(self, writing: str, reading: str | None = None):
+    def __init__(
+        self, writing: str, reading: str | None = None, is_punctuation: bool = False
+    ):
         self.writing = writing
         self.reading = reading
         self.tooltips = []
+        self.is_punctuation = is_punctuation
 
     def add_reading(self, reading: str):
         self.reading = reading
@@ -133,7 +136,10 @@ def process(input: str):
             words_text = sentence_text.split(" ")
             sentence = Sentence()
             for word_text in words_text:
-                sentence.add_word(Word(writing=word_text))
+                is_punctuation = word_text in ("、",)
+                sentence.add_word(
+                    Word(writing=word_text, is_punctuation=is_punctuation)
+                )
             sentence.add_translation(translation)
             body.append(sentence)
         elif current_section == Sections.dictionary:
@@ -155,6 +161,8 @@ def process(input: str):
         if not sentence:
             continue
         for word in sentence.words:
+            if word.is_punctuation:
+                continue
             dictionary_entry = dictionary[word.writing]
             word.reading = dictionary_entry.reading
             if isinstance(dictionary_entry, DictionaryEntry):
