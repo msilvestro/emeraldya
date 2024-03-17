@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from furigana import split_characters
-from processor import Sentence
+from emeraldya.furigana import split_characters
+from emeraldya.processor import Sentence
 
 
 def convert(header: dict, body: list[Sentence]):

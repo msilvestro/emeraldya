@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "emeraldya"
+version = "0.1.0"
+description = "Create your own annotated translation from Japanese to English."
+authors = ["Matteo Silvestro <matteosilvestro@live.it>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.scripts]
+emeraldya = 'emeraldya.main:run'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

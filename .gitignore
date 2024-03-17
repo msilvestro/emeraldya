@@ -160,5 +160,5 @@ cython_debug/
 #.idea/
 
 # input and output files
-*.jpt
+*.em
 *.html
