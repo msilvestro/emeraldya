@@ -8,14 +8,14 @@ def convert(header: dict, body: list[Sentence]):
     html_output = """<style>
     #wrapper {
         margin: 0 auto;
-        max-width: 800px;
-        font-size: 1.5em;
+        max-width: 768px;
+        font-size: 1.2em;
         position: relative;
     }
     
     .sentence {
         padding-top: 0.5em;
-        margin-bottom: 20px;
+        margin-bottom: 0.5em;
     }
 
     .word, .translation {
