@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from emeraldya.furigana import split_characters
+import markdown
 
 
 class Sections(StrEnum):
@@ -60,6 +61,10 @@ class WordTooltip:
             ),
             content=dictionary_entry.translation,
         )
+
+    @property
+    def content_html(self):
+        return markdown.markdown(self.content)
 
 
 class Sentence:

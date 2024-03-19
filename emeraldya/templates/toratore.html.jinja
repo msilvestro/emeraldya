@@ -193,9 +193,9 @@
                         <div class="tooltip-content">
                             {% for tooltip in word.tooltips %}
                                 {% if loop.first %}
-                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content, is_header=True) }}
+                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content_html, is_header=True) }}
                                 {% else %}
-                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content, is_header=False) }}
+                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content_html, is_header=False) }}
                                 {% endif %}
                             {% endfor %}
                         </div>
