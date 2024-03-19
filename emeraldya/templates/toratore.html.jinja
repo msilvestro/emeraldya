@@ -58,6 +58,10 @@
         display: none;
     }
 
+    .note_group {
+        border-bottom: 1px dashed black;
+    }
+
     /* Customize ruby appearance to avoid spacing issues */
     ruby {
         display: inline-block;
@@ -188,7 +192,7 @@
             <div class="sentence">
                 {%- for word in sentence.words -%}
                     {%- if not word.is_punctuation -%}
-                    <div class="word" onclick="showTooltip(this);activateWord(this)">
+                    <div class="word{% if word.note_group %} note_group{% endif %}" onclick="showTooltip(this);activateWord(this)">
                         {{- write_ruby(word) -}}
                         <div class="tooltip-content">
                             {% for tooltip in word.tooltips %}

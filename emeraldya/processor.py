@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -9,16 +10,22 @@ class Sections(StrEnum):
     header = "HEADER"
     body = "BODY"
     dictionary = "DICTIONARY"
+    notes = "NOTES"
 
 
 class Word:
     def __init__(
-        self, writing: str, reading: str | None = None, is_punctuation: bool = False
+        self,
+        writing: str,
+        reading: str | None = None,
+        is_punctuation: bool = False,
+        note_group: str | None = None,
     ):
         self.writing = writing
         self.reading = reading
         self.tooltips = []
         self.is_punctuation = is_punctuation
+        self.note_group = note_group
 
     def add_reading(self, reading: str):
         self.reading = reading
@@ -116,6 +123,8 @@ def process(input: str):
     header = {}
     body = []
     dictionary = {}
+    notes = {}
+    notes_sentences = defaultdict(str)
 
     current_section = None
 
@@ -127,6 +136,8 @@ def process(input: str):
                 current_section = Sections.body
             elif line == "--- dictionary":
                 current_section = Sections.dictionary
+            elif line == "--- notes":
+                current_section = Sections.notes
         elif current_section == Sections.header:
             if line == "":
                 continue
@@ -141,9 +152,17 @@ def process(input: str):
             words_text = sentence_text.split(" ")
             sentence = Sentence()
             for word_text in words_text:
+                note_group = None
+                if "^" in word_text:
+                    word_text, note_group = word_text.split("^", 1)
+                    notes_sentences[note_group] += word_text
                 is_punctuation = word_text in ("、",)
                 sentence.add_word(
-                    Word(writing=word_text, is_punctuation=is_punctuation)
+                    Word(
+                        writing=word_text,
+                        is_punctuation=is_punctuation,
+                        note_group=note_group,
+                    )
                 )
             sentence.add_translation(translation)
             body.append(sentence)
@@ -161,6 +180,11 @@ def process(input: str):
                 )
             else:
                 dictionary[writing] = DictionaryEntry(writing, reading, description)
+        elif current_section == Sections.notes:
+            if line == "":
+                continue
+            note_group, note_content = line.split(":", 1)
+            notes[note_group] = note_content.strip()
 
     for sentence in body:
         if not sentence:
@@ -184,6 +208,14 @@ def process(input: str):
                             reading=dictionary_entry.reading,
                         ),
                         content=dictionary_entry.explanation,
+                    )
+                )
+            if word.note_group in notes.keys():
+                word.add_tooltip(
+                    WordTooltip(
+                        title="Other note",
+                        word=Word(writing=notes_sentences[word.note_group]),
+                        content=notes[word.note_group],
                     )
                 )
 
