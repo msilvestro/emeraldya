@@ -7,11 +7,11 @@
         {%- endif -%}
     {%- endfor -%}
 {%- endmacro -%}
-{% macro create_tooltip_section(title, content, word=None, is_header=False) %}
+{% macro create_tooltip_section(title, content, words=None, is_header=False) %}
     <div class="section">
         <div class="section-header"><span>{{ title }}</span>{% if is_header %}
             <span class="tooltip-close" onclick="hideTooltip()">x</span>{% endif %}</div>
-        <div class="section-content">{% if not word %}{{ content }}{% else %}<p>{{ write_ruby(word) }}</p><p>{{ content }}</p>{% endif %}</div>
+        <div class="section-content">{% if not words %}{{ content }}{% else %}<p>{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p><p>{{ content }}</p>{% endif %}</div>
     </div>
 {% endmacro %}
 
@@ -197,9 +197,9 @@
                         <div class="tooltip-content">
                             {% for tooltip in word.tooltips %}
                                 {% if loop.first %}
-                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content_html, is_header=True) }}
+                                    {{ create_tooltip_section(title=tooltip.title, words=tooltip.words, content=tooltip.content_html, is_header=True) }}
                                 {% else %}
-                                    {{ create_tooltip_section(title=tooltip.title, word=tooltip.word, content=tooltip.content_html, is_header=False) }}
+                                    {{ create_tooltip_section(title=tooltip.title, words=tooltip.words, content=tooltip.content_html, is_header=False) }}
                                 {% endif %}
                             {% endfor %}
                         </div>

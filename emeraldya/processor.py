@@ -56,16 +56,16 @@ class Word:
 @dataclass
 class WordTooltip:
     title: str
-    word: "Word"
+    words: list["Word"]
     content: str
 
     @classmethod
     def from_dictionary_entry(cls, dictionary_entry: "DictionaryEntry"):
         return cls(
             title="Dictionary entry",
-            word=Word(
-                writing=dictionary_entry.writing, reading=dictionary_entry.reading
-            ),
+            words=[
+                Word(writing=dictionary_entry.writing, reading=dictionary_entry.reading)
+            ],
             content=dictionary_entry.translation,
         )
 
@@ -124,7 +124,7 @@ def process(input: str):
     body = []
     dictionary = {}
     notes = {}
-    notes_sentences = defaultdict(str)
+    notes_words = defaultdict(list)
 
     current_section = None
 
@@ -155,15 +155,15 @@ def process(input: str):
                 note_group = None
                 if "^" in word_text:
                     word_text, note_group = word_text.split("^", 1)
-                    notes_sentences[note_group] += word_text
                 is_punctuation = word_text in ("、",)
-                sentence.add_word(
-                    Word(
-                        writing=word_text,
-                        is_punctuation=is_punctuation,
-                        note_group=note_group,
-                    )
+                word = Word(
+                    writing=word_text,
+                    is_punctuation=is_punctuation,
+                    note_group=note_group,
                 )
+                sentence.add_word(word)
+                if word.note_group:
+                    notes_words[word.note_group].append(word)
             sentence.add_translation(translation)
             body.append(sentence)
         elif current_section == Sections.dictionary:
@@ -203,20 +203,23 @@ def process(input: str):
                 word.add_tooltip(
                     WordTooltip(
                         title="Sentence form",
-                        word=Word(
-                            writing=dictionary_entry.writing,
-                            reading=dictionary_entry.reading,
-                        ),
+                        words=[
+                            Word(
+                                writing=dictionary_entry.writing,
+                                reading=dictionary_entry.reading,
+                            )
+                        ],
                         content=dictionary_entry.explanation,
                     )
                 )
-            if word.note_group in notes.keys():
-                word.add_tooltip(
-                    WordTooltip(
-                        title="Other note",
-                        word=Word(writing=notes_sentences[word.note_group]),
-                        content=notes[word.note_group],
-                    )
+    for note_group, words in notes_words.items():
+        for word in words:
+            word.add_tooltip(
+                WordTooltip(
+                    title="Other note",
+                    words=words,
+                    content=notes[word.note_group],
                 )
+            )
 
     return header, body
