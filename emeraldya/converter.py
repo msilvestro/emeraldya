@@ -11,5 +11,5 @@ env = Environment(
 
 
 def convert(header: dict, body: list[Sentence]):
-    template = env.get_template("toratore.html.jinja")
+    template = env.get_template("ririkon.html.jinja")
     return template.render(header=header, body=body)
