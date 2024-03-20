@@ -3,7 +3,9 @@
         {%- if not character.furigana -%}
             {{ character.main }}
         {%- else -%}
-            <ruby>{{ character.main }}<rt>{{ character.furigana }}</rt></ruby>
+            <ruby>{{ character.main }}
+                <rt>{{ character.furigana }}</rt>
+            </ruby>
         {%- endif -%}
     {%- endfor -%}
 {%- endmacro -%}
@@ -11,16 +13,57 @@
     <div class="section">
         <div class="section-header"><span>{{ title }}</span>{% if is_header %}
             <span class="tooltip-close" onclick="hideTooltip()">x</span>{% endif %}</div>
-        <div class="section-content">{% if not words %}{{ content }}{% else %}<p>{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p><p>{{ content }}</p>{% endif %}</div>
+        <div class="section-content">
+            {% if not words %}{{ content }}{% else %}<p>{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p>
+                <p>{{ content }}</p>{% endif %}</div>
     </div>
 {% endmacro %}
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+    body {
+        margin: 0;
+        font-family: "Noto Sans", "Noto Sans JP", sans-serif;
+    }
+
     #wrapper {
         margin: 0 auto;
         max-width: 768px;
         font-size: 1.2em;
         position: relative;
+    }
+
+    #header {
+        background-color: cornflowerblue;
+        color: white;
+        padding: 20px;
+        display: flex;
+    }
+
+    h1, h2 {
+        padding: 0;
+        margin: 0;
+    }
+
+    img#cover {
+        height: 150px;
+        margin-right: 20px;
+    }
+
+    #title {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+    }
+
+    #header a {
+        text-decoration: none;
+    }
+
+    #body {
+        padding: 20px;
     }
 
     .sentence {
@@ -135,7 +178,7 @@
         const tooltip = document.getElementById("tooltip");
         tooltip.innerHTML = element.getElementsByClassName("tooltip-content")[0].innerHTML;
         tooltip.style.visibility = 'visible';
-        tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom - 8) + "px";
+        tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom) + "px";
         justClicked = true;
     }
 
@@ -183,39 +226,49 @@
     }
 </script>
 <div id="wrapper">
-    <h1>{{ header["title"] }} - {{ header["author"] }}</h1>
+    <div id="header">
+        <img id="cover" src="{{ header["cover_art"] }}"/>
+        <div id="title">
+            <h1>{{ header["title"] }}</h1>
+            <h2>{{ header["author"] }}</h2>
+        </div>
+        <div><a href=".">↩️</a></div>
+    </div>
     <div id="tooltip" style="visibility: hidden"></div>
-    {% for sentence in body %}
-        {% if not sentence %}
-            <br/>
-        {% else %}
-            <div class="sentence">
-                {%- for word in sentence.words -%}
-                    {%- if not word.is_punctuation -%}
-                    <div class="word{% if word.note_group %} note_group{% endif %}" onclick="showTooltip(this);activateWord(this)">
-                        {{- write_ruby(word) -}}
+    <div id="body">
+        {% for sentence in body %}
+            {% if not sentence %}
+                <br/>
+            {% else %}
+                <div class="sentence">
+                    {%- for word in sentence.words -%}
+                        {%- if not word.is_punctuation -%}
+                            <div class="word{% if word.note_group %} note_group{% endif %}"
+                                 onclick="showTooltip(this);activateWord(this)">
+                                {{- write_ruby(word) -}}
+                                <div class="tooltip-content">
+                                    {% for tooltip in word.tooltips %}
+                                        {% if loop.first %}
+                                            {{ create_tooltip_section(title=tooltip.title, words=tooltip.words, content=tooltip.content_html, is_header=True) }}
+                                        {% else %}
+                                            {{ create_tooltip_section(title=tooltip.title, words=tooltip.words, content=tooltip.content_html, is_header=False) }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {%- else -%}
+                            <div class="word punctuation">{{ word.writing }}</div>
+                        {%- endif -%}
+                    {%- endfor -%}
+                    <div class="translation" title="translation"
+                         onclick="showTooltip(this);activateSentence(this)">
+                        🔄
                         <div class="tooltip-content">
-                            {% for tooltip in word.tooltips %}
-                                {% if loop.first %}
-                                    {{ create_tooltip_section(title=tooltip.title, words=tooltip.words, content=tooltip.content_html, is_header=True) }}
-                                {% else %}
-                                    {{ create_tooltip_section(title=tooltip.title, words=tooltip.words, content=tooltip.content_html, is_header=False) }}
-                                {% endif %}
-                            {% endfor %}
+                            {{- create_tooltip_section(title="Translation", content=sentence.translation, is_header=True) -}}
                         </div>
                     </div>
-                    {%- else -%}
-                        <div class="word punctuation">{{ word.writing }}</div>
-                    {%- endif -%}
-                {%- endfor -%}
-                <div class="translation" title="translation"
-                     onclick="showTooltip(this);activateSentence(this)">
-                    🔄
-                    <div class="tooltip-content">
-                        {{- create_tooltip_section(title="Translation", content=sentence.translation, is_header=True) -}}
-                    </div>
                 </div>
-            </div>
-        {% endif %}
-    {% endfor %}
+            {% endif %}
+        {% endfor %}
+    </div>
 </div>
