@@ -22,7 +22,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ header["title"] }} - {{ header["author"] }} (annotated translation)</title>
+    <title>{{ header["title"] }} - {{ header["author"] }} | Toratore</title>
     <meta charset="utf-8"/>
     <meta
             name="description"
@@ -82,7 +82,7 @@
         }
 
         .word, .translation {
-            display: inline-block;
+            display: flex;
             border-bottom: 5px solid white;
             height: 1.5em; /* otherwise kanjis might have different heights */
         }
@@ -239,7 +239,9 @@
 <body>
 <div id="wrapper">
     <div id="header">
-        <img id="cover" src="{{ header["cover_art"] }}"/>
+        <a href="{{ header["music_video"] }}" target="_blank">
+            <img id="cover" src="{{ header["cover_art"] }}"/>
+        </a>
         <div id="title">
             <h1>{{ header["title"] }}</h1>
             <h2>{{ header["author"] }}</h2>
