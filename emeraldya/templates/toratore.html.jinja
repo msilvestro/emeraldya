@@ -15,7 +15,7 @@
             <span class="tooltip-close" onclick="hideTooltip()">x</span>{% endif %}</div>
         <div class="section-content">
             {% if not words %}{{ content }}{% else %}<p>{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p>
-                <p>{{ content }}</p>{% endif %}</div>
+                <div class="tooltip-paragraph">{{ content }}</div>{% endif %}</div>
     </div>
 {%- endmacro -%}
 
@@ -109,6 +109,10 @@
 
         .tooltip-content {
             display: none;
+        }
+
+        .tooltip-paragraph {
+            margin-top: 10px;
         }
 
         .note_group {
