@@ -10,8 +10,9 @@ from bs4 import BeautifulSoup
 @click.command()
 @click.option("--input-dir", "-i", default=".")
 @click.option("--output-dir", "-o", default=".")
+@click.option("--template", "-t", default="ririkon.html.jinja")
 @click.option("--prettify", "-p", default=False, is_flag=True)
-def run(input_dir: str, output_dir: str, prettify: bool):
+def run(input_dir: str, output_dir: str, template: str, prettify: bool):
     file_found = False
     for em_file in Path(input_dir).glob("*.em"):
         file_found = True
@@ -20,7 +21,7 @@ def run(input_dir: str, output_dir: str, prettify: bool):
             em_input = reader.read()
 
         header, body = process(em_input)
-        html_output = convert(header, body)
+        html_output = convert(header, body, template_name=template)
         if prettify:
             html_output = BeautifulSoup(html_output, "html.parser").prettify()
 
