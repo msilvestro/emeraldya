@@ -17,215 +17,226 @@
             {% if not words %}{{ content }}{% else %}<p>{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p>
                 <p>{{ content }}</p>{% endif %}</div>
     </div>
-{% endmacro %}
+{%- endmacro -%}
 
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ header["title"] }} - {{ header["author"] }} (annotated translation)</title>
+    <meta charset="utf-8"/>
+    <meta
+            name="description"
+            content="Annotated translation of {{ header["title"] }} by {{ header["author"] }}."
+    />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
-    body {
-        margin: 0;
-        font-family: "Noto Sans", "Noto Sans JP", sans-serif;
-    }
-
-    #wrapper {
-        margin: 0 auto;
-        max-width: 768px;
-        font-size: 1.2em;
-        position: relative;
-    }
-
-    #header {
-        background-color: cornflowerblue;
-        color: white;
-        padding: 20px;
-        display: flex;
-    }
-
-    h1, h2 {
-        padding: 0;
-        margin: 0;
-    }
-
-    img#cover {
-        height: 150px;
-        margin-right: 20px;
-    }
-
-    #title {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1;
-    }
-
-    #header a {
-        text-decoration: none;
-    }
-
-    #body {
-        padding: 20px;
-    }
-
-    .sentence {
-        padding-top: 0.5em;
-        margin-bottom: 0.5em;
-        display: flex;
-    }
-
-    .word, .translation {
-        display: inline-block;
-        border-bottom: 5px solid white;
-        height: 1.5em; /* otherwise kanjis might have different heights */
-    }
-
-    .word:hover, .word.active {
-        border-bottom: 5px solid cornflowerblue;
-    }
-
-    .punctuation:hover {
-        border-bottom: 5px solid white;
-    }
-
-    .punctuation.active:hover {
-        border-bottom: 5px solid cornflowerblue;
-    }
-
-    .translation {
-        margin-left: 0.5em;
-    }
-
-    .translation:hover {
-        cursor: pointer;
-    }
-
-    .tooltip-content {
-        display: none;
-    }
-
-    .note_group {
-        border-bottom: 1px dashed black;
-    }
-
-    /* Customize ruby appearance to avoid spacing issues */
-    ruby {
-        display: inline-block;
-        position: relative;
-    }
-
-    ruby rt {
-        display: inline-block;
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: -1em;
-        text-align: center;
-    }
-
-    #tooltip {
-        box-sizing: border-box;
-        position: absolute;
-        z-index: 1;
-        min-width: 100%;
-        border: 1px solid black;
-        background-color: white;
-    }
-
-    #tooltip .section {
-        margin-bottom: 10px;
-    }
-
-    #tooltip .section:last-child {
-        margin-bottom: 0;
-    }
-
-    #tooltip .section-header {
-        background-color: cornflowerblue;
-        padding: 10px;
-        color: white;
-    }
-
-    #tooltip .section-content {
-        padding: 10px;
-    }
-
-    #tooltip .section-content p {
-        margin: 0;
-        padding: 0;
-    }
-
-    #tooltip .tooltip-close {
-        cursor: pointer;
-        float: right;
-        line-height: 100%;
-    }
-
-    #tooltip ruby {
-        margin-top: 0.5em;
-    }
-</style>
-<script>
-    let justClicked = false;
-    let activeElements = [];
-
-    function cleanActiveElements() {
-        for (let child of activeElements) {
-            child.classList.remove("active");
+        body {
+            margin: 0;
+            font-family: "Noto Sans", "Noto Sans JP", sans-serif;
         }
-        activeElements = [];
-    }
 
-    function showTooltip(element) {
-        cleanActiveElements();
-        const tooltip = document.getElementById("tooltip");
-        tooltip.innerHTML = element.getElementsByClassName("tooltip-content")[0].innerHTML;
-        tooltip.style.visibility = 'visible';
-        tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom) + "px";
-        justClicked = true;
-    }
-
-    function hideTooltip() {
-        cleanActiveElements();
-        const tooltip = document.getElementById("tooltip");
-        tooltip.style.visibility = 'hidden';
-    }
-
-    function activateWord(element) {
-        element.classList.add("active");
-        activeElements = [element];
-    }
-
-    function activateSentence(element) {
-        activeElements = [];
-        const sentence = element.parentNode;
-        for (let child of sentence.children) {
-            if (child.classList.contains("word")) {
-                child.classList.add("active");
-                activeElements.push(child);
-            }
+        #wrapper {
+            margin: 0 auto;
+            max-width: 768px;
+            font-size: 1.2em;
+            position: relative;
         }
-    }
 
-    window.onload = function () {
-        const tooltip = document.getElementById("tooltip");
+        #header {
+            background-color: cornflowerblue;
+            color: white;
+            padding: 20px;
+            display: flex;
+        }
 
-        document.onclick = function (event) {
-            if (justClicked) {
-                justClicked = false;
-                return;
+        h1, h2 {
+            padding: 0;
+            margin: 0;
+        }
+
+        img#cover {
+            height: 150px;
+            margin-right: 20px;
+        }
+
+        #title {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        #header a {
+            text-decoration: none;
+        }
+
+        #body {
+            padding: 20px;
+        }
+
+        .sentence {
+            padding-top: 0.5em;
+            margin-bottom: 0.5em;
+            display: flex;
+        }
+
+        .word, .translation {
+            display: inline-block;
+            border-bottom: 5px solid white;
+            height: 1.5em; /* otherwise kanjis might have different heights */
+        }
+
+        .word:hover, .word.active {
+            border-bottom: 5px solid cornflowerblue;
+        }
+
+        .punctuation:hover {
+            border-bottom: 5px solid white;
+        }
+
+        .punctuation.active:hover {
+            border-bottom: 5px solid cornflowerblue;
+        }
+
+        .translation {
+            margin-left: 0.5em;
+        }
+
+        .translation:hover {
+            cursor: pointer;
+        }
+
+        .tooltip-content {
+            display: none;
+        }
+
+        .note_group {
+            border-bottom: 1px dashed black;
+        }
+
+        /* Customize ruby appearance to avoid spacing issues */
+        ruby {
+            display: inline-block;
+            position: relative;
+        }
+
+        ruby rt {
+            display: inline-block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -1em;
+            text-align: center;
+        }
+
+        #tooltip {
+            box-sizing: border-box;
+            position: absolute;
+            z-index: 1;
+            min-width: 100%;
+            border: 1px solid black;
+            background-color: white;
+        }
+
+        #tooltip .section {
+            margin-bottom: 10px;
+        }
+
+        #tooltip .section:last-child {
+            margin-bottom: 0;
+        }
+
+        #tooltip .section-header {
+            background-color: cornflowerblue;
+            padding: 10px;
+            color: white;
+        }
+
+        #tooltip .section-content {
+            padding: 10px;
+        }
+
+        #tooltip .section-content p {
+            margin: 0;
+            padding: 0;
+        }
+
+        #tooltip .tooltip-close {
+            cursor: pointer;
+            float: right;
+            line-height: 100%;
+        }
+
+        #tooltip ruby {
+            margin-top: 0.5em;
+        }
+    </style>
+    <script>
+        let justClicked = false;
+        let activeElements = [];
+
+        function cleanActiveElements() {
+            for (let child of activeElements) {
+                child.classList.remove("active");
             }
+            activeElements = [];
+        }
 
-            if (tooltip.style.visibility === 'visible' && !tooltip.contains(event.target)) {
-                hideTooltip();
+        function showTooltip(element) {
+            cleanActiveElements();
+            const tooltip = document.getElementById("tooltip");
+            tooltip.innerHTML = element.getElementsByClassName("tooltip-content")[0].innerHTML;
+            tooltip.style.visibility = 'visible';
+            tooltip.style.top = (window.scrollY + element.getBoundingClientRect().bottom) + "px";
+            justClicked = true;
+        }
+
+        function hideTooltip() {
+            cleanActiveElements();
+            const tooltip = document.getElementById("tooltip");
+            tooltip.style.visibility = 'hidden';
+        }
+
+        function activateWord(element) {
+            element.classList.add("active");
+            activeElements = [element];
+        }
+
+        function activateSentence(element) {
+            activeElements = [];
+            const sentence = element.parentNode;
+            for (let child of sentence.children) {
+                if (child.classList.contains("word")) {
+                    child.classList.add("active");
+                    activeElements.push(child);
+                }
             }
         }
 
-        document.onkeydown = function (event) {
-            if (event.key === 'Escape' && tooltip.style.visibility === 'visible') {
-                hideTooltip();
+        window.onload = function () {
+            const tooltip = document.getElementById("tooltip");
+
+            document.onclick = function (event) {
+                if (justClicked) {
+                    justClicked = false;
+                    return;
+                }
+
+                if (tooltip.style.visibility === 'visible' && !tooltip.contains(event.target)) {
+                    hideTooltip();
+                }
+            }
+
+            document.onkeydown = function (event) {
+                if (event.key === 'Escape' && tooltip.style.visibility === 'visible') {
+                    hideTooltip();
+                }
             }
         }
-    }
-</script>
+    </script>
+</head>
+<body>
 <div id="wrapper">
     <div id="header">
         <img id="cover" src="{{ header["cover_art"] }}"/>
@@ -273,3 +284,5 @@
         {% endfor %}
     </div>
 </div>
+</body>
+</html>
