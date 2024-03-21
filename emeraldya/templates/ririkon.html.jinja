@@ -11,11 +11,18 @@
 {%- endmacro -%}
 {% macro create_tooltip_section(title, content, words=None, is_header=False) %}
     <div class="section">
-        <div class="section-header"><span>{{ title }}</span>{% if is_header %}
-            <span class="tooltip-close" onclick="hideTooltip()">x</span>{% endif %}</div>
+        <div class="section-header">
+            <span>{{ title }}</span>
+            {% if is_header %}<span class="tooltip-close" onclick="hideTooltip()">x</span>{% endif %}
+        </div>
         <div class="section-content">
-            {% if not words %}{{ content }}{% else %}<p>{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p>
-                <div class="tooltip-paragraph">{{ content }}</div>{% endif %}</div>
+        {% if not words %}
+            {{ content }}
+        {% else %}
+            <p class="word">{% for word in words %}{{ write_ruby(word) }}{% endfor %}</p>
+            <div class="tooltip-paragraph">{{ content }}</div>
+        {% endif %}
+        </div>
     </div>
 {%- endmacro -%}
 
@@ -23,12 +30,14 @@
 <html>
 <head>
     <title>{{ header["title"] }} - {{ header["author"] }}</title>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
             name="description"
             content="Annotated translation of {{ header["title"] }} by {{ header["author"] }}."
-    />
-    <style>
+    >
+    <base target="_blank">
+    <style media="screen">
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
         body {
@@ -76,26 +85,28 @@
         }
 
         .sentence {
-            padding-top: 0.5em;
-            margin-bottom: 0.5em;
             display: flex;
+            height: 2.5em;
         }
 
         .word, .translation {
             display: flex;
             border-bottom: 5px solid white;
-            height: 1.5em; /* otherwise kanjis might have different heights */
+            align-items: end;
         }
 
         .word:hover, .word.active {
+            margin-bottom: 0;
             border-bottom: 5px solid cornflowerblue;
         }
 
         .punctuation:hover {
+            margin-bottom: 0;
             border-bottom: 5px solid white;
         }
 
-        .punctuation.active:hover {
+        .punctuation.active {
+            margin-bottom: 0;
             border-bottom: 5px solid cornflowerblue;
         }
 
@@ -116,22 +127,20 @@
         }
 
         .note_group {
+            margin-bottom: 4px;
             border-bottom: 1px dashed black;
         }
 
         /* Customize ruby appearance to avoid spacing issues */
         ruby {
-            display: inline-block;
-            position: relative;
+            display: flex;
+            flex-direction: column-reverse;
+            text-align: center;
         }
 
         ruby rt {
-            display: inline-block;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: -1em;
             text-align: center;
+            margin-bottom: -0.4em;
         }
 
         #tooltip {
@@ -172,8 +181,19 @@
             line-height: 100%;
         }
 
-        #tooltip ruby {
-            margin-top: 0.5em;
+        #tooltip p.word {
+            border: 0;
+        }
+
+        #tooltip p.word:hover {
+            border: 0;
+        }
+
+        #fine-print {
+            padding: 20px;
+            border-top: 1px solid gray;
+            font-size: 0.7em;
+            color: gray;
         }
     </style>
     <script>
@@ -243,14 +263,13 @@
 <body>
 <div id="wrapper">
     <div id="header">
-        {% if header["music_video"] %}<a href="{{ header["music_video"] }}" target="_blank">{% endif %}
-            {% if header["cover_art"] %}<img id="cover" src="{{ header["cover_art"] }}"/>{% endif %}
-        {% if header["music_video"] %}</a>{% endif %}
+        <a href="{{ header["music_video"] }}">
+            <img id="cover" src="{{ header["cover_art"] }}"/>
+        </a>
         <div id="title">
             <h1>{{ header["title"] }}</h1>
             <h2>{{ header["author"] }}</h2>
         </div>
-        <div><a href=".">↩️</a></div>
     </div>
     <div id="tooltip" style="visibility: hidden"></div>
     <div id="body">
@@ -288,6 +307,9 @@
                 </div>
             {% endif %}
         {% endfor %}
+    </div>
+    <div id="fine-print">
+        <p>Made with <a href="https://github.com/msilvestro/emeraldya">Emeraldya</a></p>
     </div>
 </div>
 </body>
