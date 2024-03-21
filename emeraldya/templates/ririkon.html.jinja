@@ -243,9 +243,9 @@
 <body>
 <div id="wrapper">
     <div id="header">
-        <a href="{{ header["music_video"] }}" target="_blank">
-            <img id="cover" src="{{ header["cover_art"] }}"/>
-        </a>
+        {% if header["music_video"] %}<a href="{{ header["music_video"] }}" target="_blank">{% endif %}
+            {% if header["cover_art"] %}<img id="cover" src="{{ header["cover_art"] }}"/>{% endif %}
+        {% if header["music_video"] %}</a>{% endif %}
         <div id="title">
             <h1>{{ header["title"] }}</h1>
             <h2>{{ header["author"] }}</h2>
