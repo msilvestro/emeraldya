@@ -57,6 +57,8 @@ As already said, this is in early development, I mostly created the bare minimum
 This is what's missing:
 - Support for different definitions for the same word
 - A better characters splitter to assign furigana to kanjis (the implemented one will not work, for instance, on 連れて行く)
+- Allow multiline Markdown strings for header fields and notes
+- Raise useful errors
 - Readable and exportable code
 - Better documentation on Emerald files
 - Tests
